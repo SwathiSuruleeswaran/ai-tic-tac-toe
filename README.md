@@ -15,3 +15,6 @@ python main.py
 ## 🧠 Concepts Used
 - Minimax Algorithm
 - GUI Programming (Tkinter)
+
+## 📸 Output
+![Game Screenshot](game.png)
