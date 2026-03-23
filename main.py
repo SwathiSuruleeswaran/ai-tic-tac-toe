@@ -1,72 +1,150 @@
-Python 3.12.4 (tags/v3.12.4:8e8a4ba, Jun  6 2024, 19:30:16) [MSC v.1940 64 bit (AMD64)] on win32
-Type "help", "copyright", "credits" or "license()" for more information.
+import tkinter as tk
+import math
 
-==================================================== RESTART: C:/Users/swath/AppData/Local/Programs/Python/Python312/tic_tac_toe.py ====================================================
+# Create window
+root = tk.Tk()
+root.title("AI Tic Tac Toe")
 
+board = [" " for _ in range(9)]
+buttons = []
+player_score = 0
+ai_score = 0
 
-  |   |  
---+---+--
-  |   |  
---+---+--
-  |   |  
+# Title
+title = tk.Label(root, text="Tic Tac Toe - AI", font=("Arial", 18, "bold"))
+title.grid(row=0, column=0, columnspan=3, pady=10)
 
+# Winner check with highlight
+def winner(b, p):
+    win = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+    ]
+    for combo in win:
+        if b[combo[0]] == b[combo[1]] == b[combo[2]] == p:
+            for i in combo:
+                buttons[i].config(bg="lightgreen")
+            return True
+    return False
 
-Enter position (0-8): 5
+# Check draw
+def draw(b):
+    return " " not in b
 
+# Minimax algorithm
+def minimax(b, is_max):
+    if winner(b, "O"):
+        return 1
+    if winner(b, "X"):
+        return -1
+    if draw(b):
+        return 0
 
-  |   | O
---+---+--
-  |   | X
---+---+--
-  |   |  
+    if is_max:
+        best = -math.inf
+        for i in range(9):
+            if b[i] == " ":
+                b[i] = "O"
+                score = minimax(b, False)
+                b[i] = " "
+                best = max(best, score)
+        return best
+    else:
+        best = math.inf
+        for i in range(9):
+            if b[i] == " ":
+                b[i] = "X"
+                score = minimax(b, True)
+                b[i] = " "
+                best = min(best, score)
+        return best
 
+# AI move
+def ai_move():
+    best_score = -math.inf
+    move = -1
+    for i in range(9):
+        if board[i] == " ":
+            board[i] = "O"
+            score = minimax(board, False)
+            board[i] = " "
+            if score > best_score:
+                best_score = score
+                move = i
 
-Enter position (0-8): 0
+    if move != -1:
+        board[move] = "O"
+        buttons[move]["text"] = "O"
+        buttons[move].config(fg="red")
 
+# Button click
+def click(i):
+    global player_score, ai_score
 
-X |   | O
---+---+--
-O |   | X
---+---+--
-  |   |  
+    if board[i] == " ":
+        board[i] = "X"
+        buttons[i]["text"] = "X"
+        buttons[i].config(fg="blue")
 
+        if winner(board, "X"):
+            player_score += 1
+            result_label.config(text="You Win!")
+            update_score()
+            disable_buttons()
+            return
 
-Enter position (0-8): 6
+        if draw(board):
+            result_label.config(text="Draw!")
+            return
 
+        ai_move()
 
-X |   | O
---+---+--
-O | O | X
---+---+--
-X |   |  
+        if winner(board, "O"):
+            ai_score += 1
+            result_label.config(text="Computer Wins!")
+            update_score()
+            disable_buttons()
+            return
 
+        if draw(board):
+            result_label.config(text="Draw!")
 
-Enter position (0-8): 8
+# Disable buttons
+def disable_buttons():
+    for b in buttons:
+        b.config(state="disabled")
 
+# Restart game
+def restart():
+    global board
+    board = [" " for _ in range(9)]
+    for b in buttons:
+        b.config(text=" ", state="normal", fg="black", bg="SystemButtonFace")
+    result_label.config(text="Your Turn")
 
-X |   | O
---+---+--
-O | O | X
---+---+--
-X | O | X
+# Update score
+def update_score():
+    score_label.config(text=f"Player: {player_score}  AI: {ai_score}")
 
+# Create buttons
+for i in range(9):
+    btn = tk.Button(root, text=" ", font=("Arial", 20),
+                    width=5, height=2,
+                    command=lambda i=i: click(i))
+    btn.grid(row=(i//3)+1, column=i%3)
+    buttons.append(btn)
 
-Enter position (0-8): 1
+# Result label
+result_label = tk.Label(root, text="Your Turn", font=("Arial", 14))
+result_label.grid(row=4, column=0, columnspan=3, pady=10)
 
+# Score label
+score_label = tk.Label(root, text="Player: 0  AI: 0", font=("Arial", 12))
+score_label.grid(row=5, column=0, columnspan=3)
 
-X | X | O
---+---+--
-O | O | X
---+---+--
-X | O | X
+# Restart button
+tk.Button(root, text="Restart", command=restart).grid(row=6, column=0, columnspan=3, pady=10)
 
-
-Draw!
->>> 
-==================================================== RESTART: C:/Users/swath/AppData/Local/Programs/Python/Python312/tic_tac_toe.py ====================================================
->>> 
-==================================================== RESTART: C:/Users/swath/AppData/Local/Programs/Python/Python312/tic_tac_toe.py ====================================================
->>> 
-==================================================== RESTART: C:/Users/swath/AppData/Local/Programs/Python/Python312/tic_tac_toe.py ====================================================
->>> 
-================================================================== RESTART: C:/Users/swath/OneDrive/Documents/main.py ==================================================================
+# Run app
+root.mainloop()
